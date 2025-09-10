@@ -1,0 +1,80 @@
+version: "3.9"
+services:
+  nats:
+    image: nats:2.10-alpine
+    command: ["-js"]
+    ports:
+      - "4222:4222"   # client
+      - "8222:8222"   # monitoring
+    healthcheck:
+      test: ["CMD", "nats", "--version"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    ports:
+      - "8123:8123"   # HTTP
+      - "9000:9000"   # Native
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./docker/clickhouse/initdb:/docker-entrypoint-initdb.d
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  nats-box:
+    image: synadia/nats-box:0.14.0
+    depends_on:
+      - nats
+    environment:
+      - NATS_URL=nats://nats:4222
+    command: ["sleep", "infinity"]
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    depends_on:
+      - nats
+    env_file:
+      - .env
+    environment:
+      - NATS_URL=nats://nats:4222
+    restart: unless-stopped
+
+  spark:
+    build:
+      context: .
+      dockerfile: Dockerfile.spark
+    depends_on:
+      - nats
+      - clickhouse
+    environment:
+      - NATS_URL=nats://nats:4222
+      - NATS_SUBJECT=jellycat_reviews
+      - NATS_STREAM=jellycat_reviews
+      - NATS_CONSUMER=spark_consumer
+      - CLICKHOUSE_URL=jdbc:clickhouse://clickhouse:8123/default
+      - CLICKHOUSE_USER=default
+      # Provide CLICKHOUSE_PASSWORD in your shell or .env if needed
+    restart: unless-stopped
+
+  flink:
+    build:
+      context: .
+      dockerfile: Dockerfile.flink
+    depends_on:
+      - nats
+      - clickhouse
+    environment:
+      - NATS_URL=nats://nats:4222
+      - CLICKHOUSE_URL=jdbc:clickhouse://clickhouse:8123/default
+      - CLICKHOUSE_USER=default
+      # Provide CLICKHOUSE_PASSWORD in your shell or .env if needed
+    restart: unless-stopped
+
+volumes:
+  clickhouse-data:

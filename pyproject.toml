@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jellycat-analytics"
+version = "0.1.0"
+description = "Analytics platform to compute sentiments for Jellycat content via Spark/Flink"
+authors = [{ name = "Billy Davies" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["spark", "flink", "nats", "clickhouse", "sentiment", "analytics"]
+
+dependencies = [
+  "pyspark",
+  "pyflink",
+  "praw",
+  "tweepy",
+  "facebook-sdk",
+  "nats-py",
+  "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "mypy",
+  "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/Billy-Davies-2/jellycat-analytics"
+Issues = "https://github.com/Billy-Davies-2/jellycat-analytics/issues"
+
+[project.scripts]
+jc-producer = "producer:main"
+jc-spark = "spark_job:main"
+jc-flink = "flink_job:main"
+
+[tool.ruff]
+select = ["E", "F", "I"]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
+
+[tool.hatch.build.targets.wheel]
+# Include top-level modules so hatch can build a wheel
+only-include = [
+  "producer.py",
+  "spark_job.py",
+  "flink_job.py",
+  "sentiment_utils.py",
+  "README.md",
+]

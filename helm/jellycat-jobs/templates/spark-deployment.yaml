@@ -1,0 +1,42 @@
+{{- if .Values.spark.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-job
+  labels:
+    app: spark-job
+spec:
+  replicas: {{ .Values.replicaCount.spark }}
+  selector:
+    matchLabels:
+      app: spark-job
+  template:
+    metadata:
+      labels:
+        app: spark-job
+    spec:
+      containers:
+        - name: spark
+          image: {{ .Values.image.registry }}/{{ .Values.image.owner }}/{{ .Values.image.spark.repository }}:{{ .Values.image.spark.tag }}
+          imagePullPolicy: {{ .Values.image.spark.pullPolicy }}
+          env:
+            - name: NATS_URL
+              value: {{ .Values.natsConnection.url | quote }}
+            - name: NATS_SUBJECT
+              value: {{ .Values.natsConnection.subject | quote }}
+            - name: NATS_STREAM
+              value: {{ .Values.natsConnection.stream | quote }}
+            - name: NATS_CONSUMER
+              value: {{ .Values.natsConnection.consumer | quote }}
+            - name: CLICKHOUSE_URL
+              value: {{ .Values.clickhouseConnection.url | quote }}
+            - name: CLICKHOUSE_USER
+              value: {{ .Values.clickhouseConnection.user | quote }}
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.clickhouseConnection.passwordSecretName }}
+                  key: {{ .Values.clickhouseConnection.passwordSecretKey }}
+          resources:
+            {{- toYaml .Values.resources.spark | nindent 12 }}
+{{- end }}

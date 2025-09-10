@@ -1,0 +1,70 @@
+image:
+  registry: ghcr.io
+  owner: Billy-Davies-2
+  spark:
+    repository: jellycat-analytics-spark
+    tag: latest
+    pullPolicy: IfNotPresent
+  flink:
+    repository: jellycat-analytics-flink
+    tag: latest
+    pullPolicy: IfNotPresent
+
+resources:
+  spark:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 2Gi
+  flink:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1
+      memory: 2Gi
+
+natsConnection:
+  url: nats://nats:4222
+  subject: jellycat_reviews
+  stream: jellycat_reviews
+  consumer: spark_consumer
+
+clickhouseConnection:
+  url: jdbc:clickhouse://clickhouse:8123/default
+  user: default
+  passwordSecretName: clickhouse-secrets
+  passwordSecretKey: password
+
+replicaCount:
+  spark: 1
+  flink: 1
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Enable built-in subcharts (official/vendor charts)
+clickhouseOperator:
+  enabled: false
+nats:
+  enabled: false
+externalSecrets:
+  enabled: false
+vault:
+  enabled: false
+flinkOperator:
+  enabled: false
+
+# Enable custom Python job Deployments in this chart (Deployments)
+spark:
+  enabled: true
+flink:
+  enabled: true
+
+# Secret store type for External Secrets (docs): vault | aws | gcp | azure
+secretStore:
+  type: vault

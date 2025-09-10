@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.dist-info/
+.eggs/
+
+# Virtual envs
+.venv/
+venv/
+ENV/
+
+# Editors/OS
+.vscode/
+.idea/
+.DS_Store
+
+# Caches & build
+.pytest_cache/
+.ipynb_checkpoints/
+dist/
+build/
+logs/
+spark-warehouse/
+
+# Environment files
+.env
+.env.*.local
+
+# Tooling
+.python-version

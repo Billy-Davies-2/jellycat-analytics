@@ -1,7 +1,7 @@
 import re
 
 positive_words = ['soft', 'cute', 'adorable', 'love', 'great', 'quality', 'well-made', 'luxurious', 'amazing', 'helpful', 'perfect', 'joyful', 'durable']
-negative_words = ['expensive', 'overpriced', 'fake', 'imitation', 'delay', 'dissappointed', 'poor', 'issue', 'cancelled', 'bad', 'waste', 'floppy', 'light']
+negative_words = ['expensive', 'overpriced', 'fake', 'imitation', 'delay', 'disappointed', 'poor', 'issue', 'cancelled', 'bad', 'waste', 'floppy', 'light']
 
 def clean_text(text):
     clean_text = re.sub('<.*?>', ' ', text)

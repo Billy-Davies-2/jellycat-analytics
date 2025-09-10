@@ -1,0 +1,36 @@
+{{- if .Values.flink.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-job
+  labels:
+    app: flink-job
+spec:
+  replicas: {{ .Values.replicaCount.flink }}
+  selector:
+    matchLabels:
+      app: flink-job
+  template:
+    metadata:
+      labels:
+        app: flink-job
+    spec:
+      containers:
+        - name: flink
+          image: {{ .Values.image.registry }}/{{ .Values.image.owner }}/{{ .Values.image.flink.repository }}:{{ .Values.image.flink.tag }}
+          imagePullPolicy: {{ .Values.image.flink.pullPolicy }}
+          env:
+            - name: NATS_URL
+              value: {{ .Values.natsConnection.url | quote }}
+            - name: CLICKHOUSE_URL
+              value: {{ .Values.clickhouseConnection.url | quote }}
+            - name: CLICKHOUSE_USER
+              value: {{ .Values.clickhouseConnection.user | quote }}
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.clickhouseConnection.passwordSecretName }}
+                  key: {{ .Values.clickhouseConnection.passwordSecretKey }}
+          resources:
+            {{- toYaml .Values.resources.flink | nindent 12 }}
+{{- end }}

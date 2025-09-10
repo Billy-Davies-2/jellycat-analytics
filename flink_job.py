@@ -4,6 +4,7 @@ from pyflink.table.descriptors import Schema, Jdbc, JdbcCatalog
 from pyflink.table.udf import udf
 import asyncio
 from nats.aio.client import Client as NATS
+from sentiment_utils import analyze_sentiment
 
 class NatsSourceFunction(SourceFunction):
     def run(self, ctx: RuntimeContext):
@@ -26,7 +27,7 @@ env = StreamExecutionEnvironment.get_execution_environment()
 t_env = StreamTableEnvironment.create(env)
 
 # Source
-stream = env.add_source(NatsSource())
+stream = env.add_source(NatsSourceFunction())
 
 # To table
 t_env.create_temporary_view("nats_source", t_env.from_data_stream(Schema().field("id", DataTypes.STRING())))
@@ -53,3 +54,9 @@ t_env.execute_sql("""
 result_table.insert_into("sentiments_sink")
 
 t_env.execute("JellycatFlinkRealTime")
+
+def main():
+    pass  # Flink job runs when module executes
+
+if __name__ == "__main__":
+    main()

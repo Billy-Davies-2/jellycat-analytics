@@ -1,0 +1,31 @@
+apiVersion: v2
+name: jellycat-jobs
+version: 0.1.0
+appVersion: "0.1.0"
+description: Helm chart for Jellycat Spark and Flink Python jobs
+type: application
+
+dependencies:
+  # Databases / Messaging
+  - name: altinity-clickhouse-operator
+    repository: https://helm.clickhouse.tech
+    version: ">=0.0.0"
+    condition: clickhouseOperator.enabled
+  - name: nats
+    repository: https://nats-io.github.io/k8s/helm/charts/
+    version: ">=0.0.0"
+    condition: nats.enabled
+  # Operators/Secrets
+  - name: external-secrets
+    repository: https://charts.external-secrets.io
+    version: ">=0.0.0"
+    condition: externalSecrets.enabled
+  - name: vault
+    repository: https://helm.releases.hashicorp.com
+    version: ">=0.0.0"
+    condition: vault.enabled
+  # Apache Flink Operator (prefer Apache-native chart)
+  - name: flink-kubernetes-operator
+    repository: https://charts.apache.org
+    version: ">=0.0.0"
+    condition: flinkOperator.enabled

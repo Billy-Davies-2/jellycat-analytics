@@ -1,0 +1,17 @@
+# syntax=docker/dockerfile:1.7
+FROM python:3.11-slim AS base
+
+# Install uv
+RUN apt-get update && apt-get install -y curl ca-certificates && rm -rf /var/lib/apt/lists/* \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+WORKDIR /app
+COPY pyproject.toml README.md /app/
+# Use uv to resolve/install only runtime deps (no dev)
+RUN uv pip install --system .
+
+COPY producer.py sentiment_utils.py /app/
+
+ENV PYTHONUNBUFFERED=1
+CMD ["jc-producer"]
