@@ -20,6 +20,8 @@ dependencies = [
   "facebook-sdk",
   "nats-py",
   "python-dotenv",
+  "transformers>=4.40",
+  "torch>=2.1; platform_machine != 'aarch64'",
 ]
 
 [project.optional-dependencies]

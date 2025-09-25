@@ -13,7 +13,6 @@ Kubernetes is preferred.
 
 ### What I might add
 
-- docker compose for local testing
 - transformers? I'm sure I can make these analytics better.
 
 
@@ -86,6 +85,14 @@ Then deploy Spark and Flink jobs via Helm:
 		--set image.flink.tag=latest
 
 Images in manifests/values use your registry owner (`ghcr.io/Billy-Davies-2/...`). Push your images and update tags as needed in Helm values.
+
+### Sentiment via Transformers
+
+This repo uses Hugging Face transformers for sentiment.
+
+- Default model: `distilbert-base-uncased-finetuned-sst-2-english`
+- Override via env: `TRANSFORMERS_MODEL=cardiffnlp/twitter-roberta-base-sentiment`
+- CPU-only by default. Torch is added as a dependency; on aarch64 you may need to pin a compatible wheel or use a base image with PyTorch preinstalled.
 
 Notes:
 - `producer.py` now uses `facebook-sdk` (`from facebook import GraphAPI`).

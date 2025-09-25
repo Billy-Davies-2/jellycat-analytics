@@ -13,4 +13,5 @@ RUN uv pip install --system .
 COPY flink_job.py sentiment_utils.py /app/
 
 ENV PYTHONUNBUFFERED=1
+# Optionally preload models at build: RUN python -c "from transformers import pipeline; pipeline('sentiment-analysis')('hi')"
 CMD ["python", "-u", "flink_job.py"]
