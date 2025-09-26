@@ -93,6 +93,27 @@ This repo uses Hugging Face transformers for sentiment.
 - Default model: `distilbert-base-uncased-finetuned-sst-2-english`
 - Override via env: `TRANSFORMERS_MODEL=cardiffnlp/twitter-roberta-base-sentiment`
 - CPU-only by default. Torch is added as a dependency; on aarch64 you may need to pin a compatible wheel or use a base image with PyTorch preinstalled.
+- GPU auto-detect: If CUDA is available, the pipeline uses GPU (device 0) automatically.
+	- Override with `TRANSFORMERS_USE_GPU`:
+		- `auto` (default): use GPU if available, else CPU
+		- `1`/`gpu`/`true`: force GPU (falls back to CPU if not available)
+		- `0`/`cpu`/`false`: force CPU
+
+### Sample data (not checked into git)
+
+Generate synthetic Jellycat texts locally:
+
+	uv run python scripts/generate_sample_data.py --out ./.data --count 500
+
+This writes `./.data/jellycat_samples.jsonl` and the `./.data` folder is git-ignored.
+
+To smoke-test the sentiment function directly:
+
+	uv run python - <<'PY'
+	from sentiment_utils import analyze_sentiment, analyze_sentiment_with_score
+	print(analyze_sentiment("I love this Jellycat!"))
+	print(analyze_sentiment_with_score("This one is disappointing."))
+	PY
 
 Notes:
 - `producer.py` now uses `facebook-sdk` (`from facebook import GraphAPI`).

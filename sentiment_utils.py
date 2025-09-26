@@ -12,13 +12,31 @@ def _clean_text(text: str) -> str:
     return text
 
 
+def _select_device() -> int:
+    """Return device index for transformers pipeline: 0 if GPU available, else -1.
+    Override with TRANSFORMERS_USE_GPU={auto,1,0} (default: auto).
+    """
+    pref = os.getenv("TRANSFORMERS_USE_GPU", "auto").strip().lower()
+    if pref in ("0", "false", "no", "cpu"):
+        return -1
+    try:
+        import torch  # type: ignore
+        if pref in ("1", "true", "yes", "gpu"):
+            return 0 if torch.cuda.is_available() else -1
+        # auto
+        return 0 if torch.cuda.is_available() else -1
+    except Exception:
+        return -1
+
+
 @lru_cache(maxsize=1)
 def _get_pipeline():
     try:
         from transformers import pipeline  # type: ignore
     except Exception:
         return None
-    return pipeline("sentiment-analysis", model=_DEFAULT_MODEL)
+    device = _select_device()
+    return pipeline("sentiment-analysis", model=_DEFAULT_MODEL, device=device)
 
 
 def analyze_sentiment(text: str) -> str:

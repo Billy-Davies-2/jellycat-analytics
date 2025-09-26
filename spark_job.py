@@ -1,8 +1,8 @@
 import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf
-from sentiment_utils import analyze_sentiment
-from pyspark.sql.types import StringType
+from sentiment_utils import analyze_sentiment, analyze_sentiment_with_score
+from pyspark.sql.types import StringType, DoubleType
 
 app_name = os.getenv("SPARK_APP_NAME", "JellycatSparkBatch")
 spark = SparkSession.builder.appName(app_name).getOrCreate()
@@ -22,8 +22,37 @@ df = (
     .load()
 )
 
-analyze_udf = udf(analyze_sentiment, StringType())
-df = df.withColumn("sentiment", analyze_udf(df.value))
+def _label_from_value(v: bytes) -> str:
+    try:
+        s = v.decode("utf-8", errors="ignore") if isinstance(v, (bytes, bytearray)) else v
+    except Exception:
+        s = ""
+    return analyze_sentiment(s)
+
+def _score_from_value(v: bytes) -> float:
+    try:
+        s = v.decode("utf-8", errors="ignore") if isinstance(v, (bytes, bytearray)) else v
+    except Exception:
+        s = ""
+    label, score = analyze_sentiment_with_score(s)
+    return float(score)
+
+def _text_from_value(v: bytes) -> str:
+    try:
+        return v.decode("utf-8", errors="ignore") if isinstance(v, (bytes, bytearray)) else str(v)
+    except Exception:
+        return ""
+
+label_udf = udf(_label_from_value, StringType())
+score_udf = udf(_score_from_value, DoubleType())
+text_udf = udf(_text_from_value, StringType())
+
+df = (
+        df.withColumn("text", text_udf(df.value))
+            .withColumn("sentiment", label_udf(df.value))
+            .withColumn("sentiment_score", score_udf(df.value))
+            .select("text", "sentiment", "sentiment_score")
+)
 
 # ClickHouse sink
 clickhouse_url = os.getenv("CLICKHOUSE_URL", "jdbc:clickhouse://localhost:8123/default")
